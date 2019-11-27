@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SWESTPAPI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace SWESTPAPI.Data
             : base(options)
         {
         }
-    {
+    
+        public DbSet<AppUser> appUsers { get; set; }
     }
 }
