@@ -6,27 +6,12 @@ using System.Threading.Tasks;
 
 namespace SWESTPAPI.Models
 {
-    public class AppUser
+    public class Login
     {
-        [Key]
         [Required]
         public String Email { get; set; }
 
         [Required]
-        public String ID { get; set; }
-    
-    
-        [Required]
         public String Password { get; set; }
-
-        public String Role { get; set; }
-
-        public String VCode { get; set; }
-
-        public String isVerified { get; set; }
-
-        public Profile Profile { get; set; }
-
-    
     }
 }
