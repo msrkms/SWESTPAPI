@@ -105,7 +105,20 @@ namespace SWESTPAPI.Controllers
 
             sweEvent.Details = (String)jObject["details"];
 
+            
+
             string attachmentName = null;
+
+
+            try
+            {
+                String oldfile = (String)jObject["attachmenturl"];
+                System.IO.File.Delete(oldfile);
+            }
+            catch
+            {
+
+            }
 
             if (file.Length > 0)
             {
