@@ -34,19 +34,7 @@ namespace SWESTPAPI.Controllers
 
 
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<AppUser>> login(string id)
-        {
-            var appUser = await _context.appUsers.FindAsync(id);
-
-            if (appUser == null)
-            {
-                return NotFound();
-            }
-
-            return appUser;
-        }
-
+        
 
         // GET: api/AppUsers/5
         [HttpGet("{id}")]
@@ -125,7 +113,7 @@ namespace SWESTPAPI.Controllers
 
         [Route("~/api/Registration")]
         [HttpPost]
-        public async Task<ActionResult<AppUser>> PostAppUser(AppUser appUser)
+        public async Task<ActionResult> PostAppUser(AppUser appUser)
         {
             MD5 mD5 = MD5.Create();
 
@@ -133,10 +121,10 @@ namespace SWESTPAPI.Controllers
             _context.appUsers.Add(appUser);
             await _context.SaveChangesAsync();
 
-            Profile profile = new Profile();
-            profile.Email = appUser.Email;
-            _context.Profile.Add(profile);
-            await _context.SaveChangesAsync();
+           Profile profile = new Profile();
+           profile.Email = appUser.Email;
+           _context.Profile.Add(profile);
+         await _context.SaveChangesAsync();
             
             return CreatedAtAction("GetAppUser", new { id = appUser.Email }, appUser);
         }

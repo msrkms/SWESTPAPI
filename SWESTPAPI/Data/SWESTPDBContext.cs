@@ -17,5 +17,7 @@ namespace SWESTPAPI.Data
         public DbSet<AppUser> appUsers { get; set; }
     
         public DbSet<Profile> Profile { get; set; }
+
+        public DbSet<SweEvent> sweEvents { get; set; }
     }
 }
