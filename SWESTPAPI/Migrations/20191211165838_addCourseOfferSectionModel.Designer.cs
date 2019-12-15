@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWESTPAPI.Data;
 
 namespace SWESTPAPI.Migrations
 {
     [DbContext(typeof(SWESTPDBContext))]
-    partial class SWESTPDBContextModelSnapshot : ModelSnapshot
+    [Migration("20191211165838_addCourseOfferSectionModel")]
+    partial class addCourseOfferSectionModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

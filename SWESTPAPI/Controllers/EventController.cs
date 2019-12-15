@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using SWESTPAPI.Data;
+using SWESTPAPI.Logic;
 using SWESTPAPI.Models;
 
 namespace SWESTPAPI.Controllers
@@ -54,7 +55,7 @@ namespace SWESTPAPI.Controllers
 
 
                     var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", attachmentName);
-                    sweEvent.AttachmentUrl = (String)path;
+                    sweEvent.AttachmentUrl =MyUrl.ImageURL+attachmentName;
                     var stream = new FileStream(path, FileMode.Create);
                     file.CopyToAsync(stream);
                 }
@@ -112,8 +113,9 @@ namespace SWESTPAPI.Controllers
 
             try
             {
-                String oldfile = (String)jObject["attachmenturl"];
-                System.IO.File.Delete(oldfile);
+
+                var oldpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", GetFileName(sweEvent.AttachmentUrl));
+                System.IO.File.Delete(oldpath);
             }
             catch
             {
@@ -135,7 +137,7 @@ namespace SWESTPAPI.Controllers
 
 
                     var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", attachmentName);
-                    sweEvent.AttachmentUrl = (String)path;
+                    sweEvent.AttachmentUrl = MyUrl.ImageURL + attachmentName;
                     var stream = new FileStream(path, FileMode.Create);
                     file.CopyToAsync(stream);
                 }
@@ -214,62 +216,57 @@ namespace SWESTPAPI.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<SweEvent>> DeleteSweEvent(int id)
+        [HttpPost("delete")]
+        public async Task<ActionResult<SweEvent>> Delete(int ID)
         {
-            var sweEvent = await _context.sweEvents.FindAsync(id);
+            var sweEvent = await _context.sweEvents.FindAsync(ID);
             if (sweEvent == null)
             {
                 return NotFound();
             }
+            
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", GetFileName(sweEvent.AttachmentUrl));
 
-            if (System.IO.File.Exists(sweEvent.AttachmentUrl))
+            try
             {
-                System.IO.File.Delete(sweEvent.AttachmentUrl);
+                if (System.IO.File.Exists(path))
+                {
+                    System.IO.File.Delete(path);
+                }
             }
+            catch(IOException i)
+            {
+                return Ok(new { i=i,p=path});
+            }
+            
             
             _context.sweEvents.Remove(sweEvent);
             await _context.SaveChangesAsync();
 
-
-
-            return sweEvent;
+            return Ok(new { status="Done"});
         }
 
 
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEvent(int id, SweEvent sweEvent)
-        {
-            if (id != sweEvent.ID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(sweEvent).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SweEventExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
+       
 
         private bool SweEventExists(int id)
         {
             return _context.sweEvents.Any(e => e.ID == id);
+        }
+
+
+        private string GetFileName(string link)
+        {
+            string[] parts = link.Split('/');
+            string fileName = "";
+
+            if (parts.Length > 0)
+                fileName = parts[parts.Length - 1];
+            else
+                fileName = link;
+
+            return fileName;
         }
 
     }

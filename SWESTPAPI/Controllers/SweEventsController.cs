@@ -30,7 +30,7 @@ namespace SWESTPAPI.Controllers
         {
             return await _context.sweEvents.ToListAsync();
         }
-
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<SweEvent>> GetSweEvent(int id)
         {
@@ -58,8 +58,8 @@ namespace SWESTPAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetSweEvent", new { id = sweEvent.ID }, sweEvent);
+                
+            return CreatedAtAction("GetSweEvent", new { id = sweEvent.ID }, sweEvent);
 
             }
             catch (DbUpdateConcurrencyException)
@@ -78,38 +78,10 @@ namespace SWESTPAPI.Controllers
         }
 
         // POST: api/SweEvents
-        [HttpPost("AddEvent")]
-        public async Task<ActionResult<SweEvent>> PostSweEvent(IFormFile file, String JSON)
+        [HttpPost()]
+        public async Task<ActionResult> PostSweEvent(SweEvent sweEvent)
         {
-            SweEvent sweEvent = new SweEvent();
-            JObject jObject = JObject.Parse(JSON);
-            SweEvent lastSweEvent= _context.sweEvents.LastOrDefault<SweEvent>();
-            string attachmentName = "eventfile"+lastSweEvent.ID + (file.FileName).Substring(1);
             
-            try
-            {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", attachmentName);
-                sweEvent.AttachmentUrl = (String)path;
-                var stream = new FileStream(path, FileMode.Create);
-                file.CopyToAsync(stream);
-            }
-            catch
-            {
-                return BadRequest();
-            }
-
-            
-            
-            sweEvent.Title = (String)jObject["title"];
-
-            sweEvent.Date= (DateTime)jObject["date"];
-
-            sweEvent.Time = (DateTime)jObject["time"];
-
-            sweEvent.Details = (String)jObject["details"];
-
-
-
             _context.sweEvents.Add(sweEvent);
             await _context.SaveChangesAsync();
 

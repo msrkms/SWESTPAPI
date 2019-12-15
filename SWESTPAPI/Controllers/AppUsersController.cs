@@ -52,13 +52,13 @@ namespace SWESTPAPI.Controllers
 
         [Route("~/api/Login")]
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody]Login login)
+        public async Task<IActionResult> Login(Login login)
         {
 
 
             if (login.Email != null && login.Password != null)
             {
-                AppUser appUser = _context.appUsers.Where(u => u.Email.Equals(login.Email)).FirstOrDefault();
+                AppUser appUser = await  _context.appUsers.Where(u => u.Email.Equals(login.Email)).FirstOrDefaultAsync();
 
                 if (appUser!=null)
                 {
@@ -69,16 +69,50 @@ namespace SWESTPAPI.Controllers
                     }
                 }
             }
-
-
             return NotFound();
-             
-            
+
 
         }
 
 
-        
+
+
+        [Route("~/api/VerifyUser")]
+        [HttpPost]
+        public async Task<IActionResult> VerifyUser(Verify verify)
+        {
+
+
+            if (verify.Email != null && verify.VCode != null)
+            {
+                AppUser appUser = _context.appUsers.Where(u => u.Email.Equals(verify.Email)).FirstOrDefault();
+
+                if (appUser != null)
+                {
+                    if (verify.VCode.Equals(appUser.VCode))
+                    {
+                        appUser.isVerified = "Verified";
+                        _context.Entry(appUser).State = EntityState.Modified;
+                        try
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                        catch
+                        {
+                            
+                        }
+                    }
+                }
+
+                return CreatedAtAction("GetAppUser", new { id = appUser.Email }, appUser);
+            }
+
+            return NotFound();
+
+
+        }
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAppUser(string id, AppUser appUser)
         {
@@ -95,7 +129,7 @@ namespace SWESTPAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AppUserExists(id))
+                if (!AppUserExists(appUser.Email))
                 {
                     return NotFound();
                 }
@@ -105,7 +139,7 @@ namespace SWESTPAPI.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetAppUser", new { id = appUser.Email }, appUser);
         }
 
 
@@ -115,41 +149,75 @@ namespace SWESTPAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> PostAppUser(AppUser appUser)
         {
+
+            if (AppUserExists(appUser.Email))
+            {
+                return Ok(new { });
+            }
+
             MD5 mD5 = MD5.Create();
+            try
+            {
+                appUser.Password = MD5Hashing.GetMd5Hash(mD5, appUser.Password);
+                _context.appUsers.Add(appUser);
+                await _context.SaveChangesAsync();
 
-            appUser.Password = MD5Hashing.GetMd5Hash(mD5, appUser.Password);
-            _context.appUsers.Add(appUser);
-            await _context.SaveChangesAsync();
+                Profile profile = new Profile();
+                profile.Email = appUser.Email;
+                _context.Profile.Add(profile);
+                await _context.SaveChangesAsync();
 
-           Profile profile = new Profile();
-           profile.Email = appUser.Email;
-           _context.Profile.Add(profile);
-         await _context.SaveChangesAsync();
-            
+            }
+            catch(Exception ex)
+            {
+                return Ok(new { });
+            }
+
             return CreatedAtAction("GetAppUser", new { id = appUser.Email }, appUser);
         }
 
-       
 
-        // DELETE: api/AppUsers/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<AppUser>> DeleteAppUser(string id)
+        [Route("~/api/SignUp")]
+        [HttpPost]
+        public async Task<ActionResult> SignUp(AppUser appUser)
         {
-            var appUser = await _context.appUsers.FindAsync(id);
-            if (appUser == null)
+
+            if (AppUserExists(appUser.Email))
             {
-                return NotFound();
+                return Ok(new { });
             }
 
-            var profile =  _context.Profile.Where(p => p.Email.Equals(appUser.Email)).FirstOrDefault<Profile>();
-            _context.Profile.Remove(profile);
-            await _context.SaveChangesAsync();
+            MD5 mD5 = MD5.Create();
+            try
+            {
+                appUser.Password = MD5Hashing.GetMd5Hash(mD5, appUser.Password);
+               _context.appUsers.Add(appUser);               
+               await _context.SaveChangesAsync();
 
-            _context.appUsers.Remove(appUser);
-            await _context.SaveChangesAsync();
+                //  Profile profile = new Profile();
+                //    profile.Email = appUser.Email;
+                //    _context.Profile.Add(profile);
+                //    await _context.SaveChangesAsync();
 
-            return appUser;
+                String Q = @"insert into Profile (Email,Semester) values ('"+appUser.Email+"',0)";
+
+                int x=  _context.Database.ExecuteSqlCommand(Q);
+
+
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { });
+            }
+
+            return CreatedAtAction("GetAppUser", new { id = appUser.Email }, appUser);
         }
+
+
+
+
+
+
 
         private bool AppUserExists(string id)
         {

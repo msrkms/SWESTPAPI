@@ -25,7 +25,13 @@ namespace SWESTPAPI.Models
 
         public String isVerified { get; set; }
 
+
+
+
         public Profile Profile { get; set; }
+
+        public IList<MyTask>  myTasks { get; set; }
+        public IList<UserCourse> userCourses { get; set; }
 
     
     }
